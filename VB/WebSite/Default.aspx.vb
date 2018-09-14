@@ -1,50 +1,46 @@
 ﻿Imports System
-Imports System.Data
-Imports System.Configuration
 Imports System.Web
-Imports System.Web.Security
-Imports System.Web.UI
-Imports System.Web.UI.WebControls
-Imports System.Web.UI.WebControls.WebParts
-Imports System.Web.UI.HtmlControls
-Imports DevExpress.Web.ASPxEditors
 Imports DevExpress.Web.ASPxGridView
+Imports DevExpress.Web
+Imports System.Collections.Generic
+Imports DevExpress.Web.Data
+Imports System.ComponentModel
 
 Partial Public Class _Default
     Inherits System.Web.UI.Page
 
-    Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs)
-
+    Public Property dataSource() As List(Of GridDataModel)
+        Get
+            If HttpContext.Current.Session("gridData") Is Nothing Then
+                HttpContext.Current.Session("gridData") = GridDataHelper.GetData()
+            End If
+            Return CType(HttpContext.Current.Session("gridData"), List(Of GridDataModel))
+        End Get
+        Set(ByVal value As List(Of GridDataModel))
+            HttpContext.Current.Session("gridData") = value
+        End Set
+    End Property
+    Protected Sub Page_Init(ByVal sender As Object, ByVal e As EventArgs)
+        grid.DataSource = dataSource
+        grid.DataBind()
     End Sub
-    Protected Sub ddE_Init(ByVal sender As Object, ByVal e As EventArgs)
-        Dim dropdownedit As ASPxDropDownEdit = TryCast(sender, ASPxDropDownEdit)
-        Dim grid As ASPxGridView = TryCast(dropdownedit.NamingContainer.NamingContainer, ASPxGridView)
 
-        Dim key As String = grid.UniqueID
-        Dim visibleIndex As String = (TryCast(dropdownedit.NamingContainer, GridViewDataItemTemplateContainer)).VisibleIndex & key
-        dropdownedit.ClientInstanceName = "dde" & visibleIndex
-
-        dropdownedit.ClientSideEvents.DropDown = String.Format("function(s,e) {{ SynchronizeGridValues(s, e, grid{0});}}", visibleIndex)
-
-        dropdownedit.ClientSideEvents.TextChanged = String.Format("function(s,e) {{SynchronizeGridValues(s, e, grid{0});}}", visibleIndex)
+    Protected Sub grid1_RowUpdating(ByVal sender As Object, ByVal e As ASPxDataUpdatingEventArgs)
+        GridDataHelper.UpdateRow(e.Keys, e.NewValues, dataSource)
+        CancelEdit(TryCast(sender, ASPxGridView), e)
     End Sub
-    Protected Sub btn_Init(ByVal sender As Object, ByVal e As EventArgs)
-        Dim button As ASPxButton = TryCast(sender, ASPxButton)
-        Dim grid As ASPxGridView = TryCast(button.NamingContainer.NamingContainer.NamingContainer.NamingContainer.NamingContainer, ASPxGridView)
 
-        Dim key As String = grid.UniqueID
-        Dim visibleIndex As String = (TryCast(button.NamingContainer.NamingContainer.NamingContainer.NamingContainer, GridViewDataItemTemplateContainer)).VisibleIndex & key
-
-        button.ClientSideEvents.Click = String.Format("function(s, e){{dde{0}.HideDropDown();}}", visibleIndex)
+    Protected Sub grid_RowDeleting(ByVal sender As Object, ByVal e As ASPxDataDeletingEventArgs)
+        GridDataHelper.DeleteRow(e.Keys, dataSource)
+        CancelEdit(TryCast(sender, ASPxGridView), e)
     End Sub
-    Protected Sub grid_Init(ByVal sender As Object, ByVal e As EventArgs)
-        Dim curGrid As ASPxGridView = TryCast(sender, ASPxGridView)
-        Dim grid As ASPxGridView = TryCast(curGrid.NamingContainer.NamingContainer.NamingContainer.NamingContainer.NamingContainer, ASPxGridView)
 
-        Dim key As String = grid.UniqueID
-        Dim visibleIndex As String = (TryCast(curGrid.NamingContainer.NamingContainer.NamingContainer.NamingContainer, GridViewDataItemTemplateContainer)).VisibleIndex & key
-        curGrid.ClientInstanceName = "grid" & visibleIndex
-
-        curGrid.ClientSideEvents.SelectionChanged = String.Format("function(s,e) {{ OnGridSelectionChanged(s, e, dde{0});}}", visibleIndex)
+    Protected Sub grid_RowInserting(ByVal sender As Object, ByVal e As ASPxDataInsertingEventArgs)
+        GridDataHelper.InsertRow(e.NewValues, dataSource)
+        CancelEdit(TryCast(sender, ASPxGridView), e)
+    End Sub
+    Protected Sub CancelEdit(ByVal grid As ASPxGridView, ByVal e As CancelEventArgs)
+        grid.CancelEdit()
+        e.Cancel = True
     End Sub
 End Class
