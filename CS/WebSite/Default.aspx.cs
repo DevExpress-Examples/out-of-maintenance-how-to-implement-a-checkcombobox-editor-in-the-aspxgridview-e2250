@@ -1,56 +1,43 @@
 using System;
-using System.Data;
-using System.Configuration;
 using System.Web;
-using System.Web.Security;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using System.Web.UI.WebControls.WebParts;
-using System.Web.UI.HtmlControls;
-using DevExpress.Web.ASPxEditors;
 using DevExpress.Web.ASPxGridView;
+using DevExpress.Web;
+using System.Collections.Generic;
+using DevExpress.Web.Data;
+using System.ComponentModel;
 
-public partial class _Default : System.Web.UI.Page 
-{
-    protected void Page_Load(object sender, EventArgs e)
-    {
-
+public partial class _Default : System.Web.UI.Page {
+    public List<GridDataModel> dataSource {
+        get {
+            if (HttpContext.Current.Session["gridData"] == null)
+                HttpContext.Current.Session["gridData"] = GridDataHelper.GetData();
+            return (List<GridDataModel>)HttpContext.Current.Session["gridData"];
+        }
+        set {
+            HttpContext.Current.Session["gridData"] = value;
+        }
+    }    
+    protected void Page_Init(object sender, EventArgs e) {
+        grid.DataSource = dataSource;
+        grid.DataBind();
     }
-    protected void ddE_Init(object sender, EventArgs e)
-    {
-        ASPxDropDownEdit dropdownedit = sender as ASPxDropDownEdit;
-        ASPxGridView grid = dropdownedit.NamingContainer.NamingContainer as ASPxGridView;
 
-        string key = grid.UniqueID;
-        string visibleIndex = (dropdownedit.NamingContainer as GridViewDataItemTemplateContainer).VisibleIndex + key;
-        dropdownedit.ClientInstanceName = "dde" + visibleIndex;
-
-        dropdownedit.ClientSideEvents.DropDown =
-            String.Format("function(s,e) {{ SynchronizeGridValues(s, e, grid{0});}}", visibleIndex);
-
-        dropdownedit.ClientSideEvents.TextChanged =
-            String.Format("function(s,e) {{SynchronizeGridValues(s, e, grid{0});}}", visibleIndex);   
+    protected void grid1_RowUpdating(object sender, ASPxDataUpdatingEventArgs e) {        
+        GridDataHelper.UpdateRow(e.Keys, e.NewValues, dataSource);
+        CancelEdit(sender as ASPxGridView, e);        
     }
-    protected void btn_Init(object sender, EventArgs e)
-    {
-        ASPxButton button = sender as ASPxButton;
-        ASPxGridView grid = button.NamingContainer.NamingContainer.NamingContainer.NamingContainer.NamingContainer as ASPxGridView;
 
-        string key = grid.UniqueID;
-        string visibleIndex = (button.NamingContainer.NamingContainer.NamingContainer.NamingContainer as GridViewDataItemTemplateContainer).VisibleIndex + key;
-
-        button.ClientSideEvents.Click = String.Format("function(s, e){{dde{0}.HideDropDown();}}", visibleIndex);
+    protected void grid_RowDeleting(object sender, ASPxDataDeletingEventArgs e) {        
+        GridDataHelper.DeleteRow(e.Keys, dataSource);
+        CancelEdit(sender as ASPxGridView, e);
     }
-    protected void grid_Init(object sender, EventArgs e)
-    {
-        ASPxGridView curGrid = sender as ASPxGridView;
-        ASPxGridView grid = curGrid.NamingContainer.NamingContainer.NamingContainer.NamingContainer.NamingContainer as ASPxGridView;
 
-        string key = grid.UniqueID;
-        string visibleIndex = (curGrid.NamingContainer.NamingContainer.NamingContainer.NamingContainer as GridViewDataItemTemplateContainer).VisibleIndex + key;
-        curGrid.ClientInstanceName = "grid" + visibleIndex;
-
-        curGrid.ClientSideEvents.SelectionChanged =
-            String.Format("function(s,e) {{ OnGridSelectionChanged(s, e, dde{0});}}", visibleIndex);
+    protected void grid_RowInserting(object sender, ASPxDataInsertingEventArgs e) {        
+        GridDataHelper.InsertRow(e.NewValues, dataSource);
+        CancelEdit(sender as ASPxGridView, e);
+    }
+    protected void CancelEdit(ASPxGridView grid, CancelEventArgs e) {
+        grid.CancelEdit();
+        e.Cancel = true;
     }
 }
