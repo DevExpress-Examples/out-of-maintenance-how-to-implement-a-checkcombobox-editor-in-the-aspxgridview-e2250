@@ -7,39 +7,24 @@
     <title>GridCheckComboBox Emulation</title>
     <script type="text/javascript">
         var textSeparator = ";";
-        function OnListBoxSelectionChanged(listBox, args) {
-            if (args.index == 0)
-                args.isSelected ? listBox.SelectAll() : listBox.UnselectAll();
-            UpdateSelectAllItemState();
-            UpdateText();
-        }
-        function UpdateSelectAllItemState() {
-            IsAllSelected() ? checkListBox.SelectIndices([0]) : checkListBox.UnselectIndices([0]);
-        }
-        function IsAllSelected() {
-            var selectedDataItemCount = checkListBox.GetItemCount() - (checkListBox.GetItem(0).selected ? 0 : 1);
-            return checkListBox.GetSelectedItems().length == selectedDataItemCount;
-        }
-        function UpdateText() {
+        function updateText() {
             var selectedItems = checkListBox.GetSelectedItems();
-            checkComboBox.SetText(GetSelectedItemsText(selectedItems));
+            checkComboBox.SetText(getSelectedItemsText(selectedItems));
         }
-        function SynchronizeListBoxValues(dropDown, args) {
+        function synchronizeListBoxValues(dropDown, args) {
             checkListBox.UnselectAll();
             var texts = dropDown.GetText().split(textSeparator);
-            var values = GetValuesByTexts(texts);
+            var values = getValuesByTexts(texts);
             checkListBox.SelectValues(values);
-            UpdateSelectAllItemState();
-            UpdateText(); // for remove non-existing texts
+            updateText(); // for remove non-existing texts
         }
-        function GetSelectedItemsText(items) {
+        function getSelectedItemsText(items) {
             var texts = [];
             for (var i = 0; i < items.length; i++)
-                if (items[i].index != 0)
-                    texts.push(items[i].text);
+                texts.push(items[i].text);
             return texts.join(textSeparator);
         }
-        function GetValuesByTexts(texts) {
+        function getValuesByTexts(texts) {
             var actualValues = [];
             var item;
             for (var i = 0; i < texts.length; i++) {
@@ -84,18 +69,18 @@
                             <DropDownWindowStyle BackColor="#EDEDED" />
                             <DropDownWindowTemplate>
                                 <dx:ASPxListBox Width="100%" ID="listBox" ClientInstanceName="checkListBox" SelectionMode="CheckColumn"
-                                    runat="server" Height="180">
+                                    runat="server" Height="200" EnableSelectAll="true">
+                                    <FilteringSettings ShowSearchUI="true" />
                                     <Border BorderStyle="None" />
                                     <BorderBottom BorderStyle="Solid" BorderWidth="1px" BorderColor="#DCDCDC" />
                                     <Items>
-                                        <dx:ListEditItem Text="(Select all)" />
-                                        <dx:ListEditItem Text="Chrome" Value="1" />
-                                        <dx:ListEditItem Text="Firefox" Value="2" />
-                                        <dx:ListEditItem Text="IE" Value="3" />
-                                        <dx:ListEditItem Text="Opera" Value="4" />
-                                        <dx:ListEditItem Text="Safari" Value="5" />
+                                        <dx:ListEditItem Text="Chrome" Value="0" />
+                                        <dx:ListEditItem Text="Firefox" Value="1" />
+                                        <dx:ListEditItem Text="IE" Value="2" />
+                                        <dx:ListEditItem Text="Opera" Value="3" />
+                                        <dx:ListEditItem Text="Safari" Value="4" />
                                     </Items>
-                                    <ClientSideEvents SelectedIndexChanged="OnListBoxSelectionChanged" />
+                                    <ClientSideEvents SelectedIndexChanged="updateText" />
                                 </dx:ASPxListBox>
                                 <table style="width: 100%">
                                     <tr>
@@ -107,7 +92,7 @@
                                     </tr>
                                 </table>
                             </DropDownWindowTemplate>
-                            <ClientSideEvents Init="SynchronizeListBoxValues" TextChanged="SynchronizeListBoxValues" DropDown="SynchronizeListBoxValues" />
+                            <ClientSideEvents TextChanged="synchronizeListBoxValues" DropDown="synchronizeListBoxValues" />
                         </PropertiesDropDownEdit>
                     </dx:GridViewDataDropDownEditColumn>
                 </Columns>

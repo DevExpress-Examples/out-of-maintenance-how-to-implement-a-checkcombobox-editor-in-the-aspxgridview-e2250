@@ -6,15 +6,15 @@ public class GridDataHelper {
     public static List<GridDataModel> GetData() {
         return Enumerable.Range(0, 100).Select(x => new GridDataModel {
             ID = x,
-            Browsers = (x % 5 + 1) != 5 ? GetBrowserNameByID(x) + ";" + GetBrowserNameByID(x + 1) :
+            Browsers = (x % 5) != 4 ? GetBrowserNameByID(x) + ";" + GetBrowserNameByID(x + 1) :
             GetBrowserNameByID(x + 1) + ";" + GetBrowserNameByID(x)
         }).ToList();
     }
     private static string GetBrowserNameByID(int id) {
-        return (id % 5 + 1) == 1 ? "Chrome" :
-            (id % 5 + 1) == 2 ? "Firefox" :
-            (id % 5 + 1) == 3 ? "IE" :
-            (id % 5 + 1) == 4 ? "Opera" : "Safari";
+        return (id % 5) == 0 ? "Chrome" :
+            (id % 5) == 1 ? "Firefox" :
+            (id % 5) == 2 ? "IE" :
+            (id % 5) == 3 ? "Opera" : "Safari";
     }
     public static void UpdateRow(OrderedDictionary keys, OrderedDictionary newValues, List<GridDataModel> dataSource) {
         dataSource.Find(x => x.ID == (int)keys[0]).Browsers = (string)newValues["Browsers"];
