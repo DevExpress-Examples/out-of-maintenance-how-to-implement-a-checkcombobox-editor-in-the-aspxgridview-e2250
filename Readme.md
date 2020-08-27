@@ -1,4 +1,7 @@
 # How to implement a CheckComboBox editor in the ASPxGridView
+<!-- run online -->
+**[[Run Online]](https://codecentral.devexpress.com/e2250/)**
+<!-- run online end -->
 
 
 <p>This example is based on the <a href="http://demos.devexpress.com/ASPxEditorsDemos/ASPxDropDownEdit/CheckComboBox.aspx">CheckComboBox Emulation demo</a>. It illustrates how to use a combination of the ASPxDropDownEdit and ASPxGridView to emulate a checked combo box that allows end-users to select multiple items within its dropdown list.</p><p><strong>See Also:</strong><br />
